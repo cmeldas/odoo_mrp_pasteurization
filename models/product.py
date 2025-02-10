@@ -2,7 +2,7 @@ from odoo import models, fields
 
 PASTEURIZATION_TEMPERATURES = [
     ("63", "63°C"),
-    ("90", "90°C"),
+    ("92", "92°C"),
     ("none", ""),  # Empty option for no pasteurization
 ]
 
