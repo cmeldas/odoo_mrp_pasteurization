@@ -12,6 +12,6 @@ class ProductTemplate(models.Model):
 
     pasteurisation_temperature = fields.Selection(
         PASTEURIZATION_TEMPERATURES,
-        string="Defaultní teplota pasteurizace",
-        help="Defaultní teplota pasteurizace pro tento produkt",
+        string="Defaultní teplota pasterizace",
+        help="Defaultní teplota pasterizace pro tento produkt",
     )

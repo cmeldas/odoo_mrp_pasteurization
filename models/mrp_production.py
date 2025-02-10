@@ -9,7 +9,7 @@ class MrpProduction(models.Model):
 
     pasteurisation_temperature = fields.Selection(
         PASTEURIZATION_TEMPERATURES,
-        string="Pasterisační teplota",
+        string="Pasterizační teplota",
         help="Teplota použitá během pasterizace",
     )
     pasteurisation_duration = fields.Integer(
