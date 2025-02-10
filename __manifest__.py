@@ -1,21 +1,19 @@
 {
-    'name': 'Manufacturing Pasteurisation Data',
-    'version': '1.0',
-    'category': 'Manufacturing',
-    'summary': 'Add pasteurisation data to manufacturing orders',
-    'description': """
-        This module adds pasteurisation-related fields to manufacturing orders:
-        * Pasteurisation Temperature
-        * Pasteurisation Duration
-        * Pasteurisation Start Time
+    "name": "Manufacturing Pasteurisation Data",
+    "version": "1.0",
+    "category": "Manufacturing",
+    "summary": "Add pasteurisation data to manufacturing orders",
+    "description": """
+        Log pasteurisation data on manufacturing orders.
     """,
-    'depends': ['mrp'],
-    'data': [
-        'security/ir.model.access.csv',
-        'views/mrp_production_views.xml',
+    "depends": ["mrp"],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/mrp_production_views.xml",
+        "views/product_views.xml",
     ],
-    'installable': True,
-    'application': False,
-    'auto_install': False,
-    'license': 'LGPL-3',
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+    "license": "LGPL-3",
 }
