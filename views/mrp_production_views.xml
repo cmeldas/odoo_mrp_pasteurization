@@ -16,9 +16,13 @@
                                     readonly="state in ('done', 'cancel')" />
                                 <field name="pasteurisation_start"
                                     readonly="state in ('done', 'cancel')" />
-                                <button name="set_pasteurisation_start" string="Set Current Time"
+                                <button name="set_pasteurisation_start" string="Začátek pasterizace"
                                     type="object"
-                                    class="oe_highlight"
+                                    class="btn-success"
+                                    invisible="state in ('done', 'cancel')" />
+                                <button name="end_pasteurisation" string="Ukončit pasterizaci"
+                                    type="object"
+                                    class="btn-warning"
                                     invisible="state in ('done', 'cancel')" />
                             </group>
                         </group>

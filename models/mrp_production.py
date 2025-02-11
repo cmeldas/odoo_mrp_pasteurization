@@ -18,7 +18,7 @@ class MrpProduction(models.Model):
     )
     pasteurisation_start = fields.Datetime(
         string="Začátek pasterizace",
-        help="Začátek pasterizace",
+        help="Datum a čas začátku pasterizace.",
     )
 
     def set_pasteurisation_start(self):
@@ -41,6 +41,14 @@ class MrpProduction(models.Model):
             # High temp (90°C): mean=4, std=0.5, min=2, max=6
             duration = random.gauss(4, 0.5)
             self.pasteurisation_duration = int(clamp(duration, 2, 10))
+
+    def end_pasteurisation(self):
+        if not self.pasteurisation_start:
+            raise UserError("Nelze ukončit pasterizaci bez zadaného začátku.")
+
+        end_time = fields.Datetime.now()
+        duration = (end_time - self.pasteurisation_start).total_seconds() / 60
+        self.pasteurisation_duration = int(duration)
 
     def _validate_pasteurisation(self):
         if self.pasteurisation_temperature and not self.pasteurisation_start:
