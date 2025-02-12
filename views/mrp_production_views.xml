@@ -30,5 +30,15 @@
                 </notebook>
             </field>
         </record>
+        <record id="mrp_production_tree_view_inherited" model="ir.ui.view">
+            <field name="name">mrp.production.tree.pasteurisation</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_tree_view" />
+            <field name="arch" type="xml">
+                <field name="product_id" position="after">
+                    <field name="pasteurisation_start" />
+                </field>
+            </field>
+        </record>
     </data>
 </odoo>
