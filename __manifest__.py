@@ -8,7 +8,6 @@
     """,
     "depends": ["mrp"],
     "data": [
-        "security/ir.model.access.csv",
         "views/mrp_production_views.xml",
         "views/product_views.xml",
     ],

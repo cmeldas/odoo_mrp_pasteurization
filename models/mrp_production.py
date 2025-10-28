@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 import random
 from .product import PASTEURIZATION_TEMPERATURES
 from odoo.exceptions import UserError
@@ -9,22 +9,23 @@ class MrpProduction(models.Model):
 
     pasteurisation_temperature = fields.Selection(
         PASTEURIZATION_TEMPERATURES,
-        string="Pasterizační teplota",
-        help="Teplota použitá během pasterizace",
+        string=_("Pasterizační teplota"),
+        help=_("Teplota použitá během pasterizace"),
     )
     pasteurisation_duration = fields.Integer(
-        string="Doba pasterizace",
-        help="Doba trvání pasterizace v minutách",
+        string=_("Doba pasterizace"),
+        help=_("Doba trvání pasterizace v minutách"),
     )
     pasteurisation_start = fields.Datetime(
-        string="Začátek pasterizace",
-        help="Datum a čas začátku pasterizace.",
+        string=_("Začátek pasterizace"),
+        help=_("Datum a čas začátku pasterizace."),
     )
 
     def set_pasteurisation_start(self):
         if not self.pasteurisation_temperature:
-            raise UserError("Zadej prvně teplotu pasterizace.")
+            raise UserError(_("Zadej prvně teplotu pasterizace."))
         self.pasteurisation_start = fields.Datetime.now()
+        
 
     def set_pasteurisation_duration(self):
         def clamp(value, min_val, max_val):
@@ -44,7 +45,7 @@ class MrpProduction(models.Model):
 
     def end_pasteurisation(self):
         if not self.pasteurisation_start:
-            raise UserError("Nelze ukončit pasterizaci bez zadaného začátku.")
+            raise UserError(_("Nelze ukončit pasterizaci bez zadaného začátku."))
 
         end_time = fields.Datetime.now()
         duration = (end_time - self.pasteurisation_start).total_seconds() / 60
@@ -52,7 +53,7 @@ class MrpProduction(models.Model):
 
     def _validate_pasteurisation(self):
         if self.pasteurisation_temperature and not self.pasteurisation_start:
-            raise UserError("Nelze dokončit výrobu bez zadání začátku pasterizace.")
+            raise UserError(_("Nelze dokončit výrobu bez zadání začátku pasterizace."))
 
     def button_mark_done(self):
         self._validate_pasteurisation()
@@ -63,5 +64,11 @@ class MrpProduction(models.Model):
         res = super().create(vals)
         if res.product_id.pasteurisation_temperature:
             res.pasteurisation_temperature = res.product_id.pasteurisation_temperature
-            res.set_pasteurisation_duration()
+        return res
+
+    def write(self, vals):
+        res = super().write(vals)
+        if vals.get('state') == 'confirmed' and self.pasteurisation_start is False:
+            self.set_pasteurisation_start()
+            self.set_pasteurisation_duration()
         return res
