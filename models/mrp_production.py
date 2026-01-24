@@ -25,7 +25,6 @@ class MrpProduction(models.Model):
         if not self.pasteurisation_temperature:
             raise UserError(_("Zadej prvně teplotu pasterizace."))
         self.pasteurisation_start = fields.Datetime.now()
-        
 
     def set_pasteurisation_duration(self):
         def clamp(value, min_val, max_val):
@@ -68,7 +67,8 @@ class MrpProduction(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if vals.get('state') == 'confirmed' and self.pasteurisation_start is False:
-            self.set_pasteurisation_start()
-            self.set_pasteurisation_duration()
+        if vals.get("state") == "confirmed" and self.pasteurisation_start is False:
+            if self.pasteurisation_temperature:
+                self.set_pasteurisation_start()
+                self.set_pasteurisation_duration()
         return res
