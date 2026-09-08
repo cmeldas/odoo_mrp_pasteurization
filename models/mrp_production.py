@@ -9,16 +9,16 @@ class MrpProduction(models.Model):
 
     pasteurisation_temperature = fields.Selection(
         PASTEURIZATION_TEMPERATURES,
-        string=_("Pasterizační teplota"),
-        help=_("Teplota použitá během pasterizace"),
+        string="Pasterizační teplota",
+        help="Teplota použitá během pasterizace",
     )
     pasteurisation_duration = fields.Integer(
-        string=_("Doba pasterizace"),
-        help=_("Doba trvání pasterizace v minutách"),
+        string="Doba pasterizace",
+        help="Doba trvání pasterizace v minutách",
     )
     pasteurisation_start = fields.Datetime(
-        string=_("Začátek pasterizace"),
-        help=_("Datum a čas začátku pasterizace."),
+        string="Začátek pasterizace",
+        help="Datum a čas začátku pasterizace.",
     )
 
     def set_pasteurisation_start(self):
@@ -58,17 +58,19 @@ class MrpProduction(models.Model):
         self._validate_pasteurisation()
         return super().button_mark_done()
 
-    @api.model
-    def create(self, vals):
-        res = super().create(vals)
-        if res.product_id.pasteurisation_temperature:
-            res.pasteurisation_temperature = res.product_id.pasteurisation_temperature
-        return res
+    @api.model_create_multi
+    def create(self, vals_list):
+        productions = super().create(vals_list)
+        for production in productions:
+            if production.product_id.pasteurisation_temperature:
+                production.pasteurisation_temperature = production.product_id.pasteurisation_temperature
+        return productions
 
     def write(self, vals):
         res = super().write(vals)
-        if vals.get("state") == "confirmed" and self.pasteurisation_start is False:
-            if self.pasteurisation_temperature:
-                self.set_pasteurisation_start()
-                self.set_pasteurisation_duration()
+        if vals.get("state") == "confirmed":
+            for production in self:
+                if production.pasteurisation_start is False and production.pasteurisation_temperature:
+                    production.set_pasteurisation_start()
+                    production.set_pasteurisation_duration()
         return res
