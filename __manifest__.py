@@ -1,6 +1,6 @@
 {
     "name": "Manufacturing Pasteurisation Data",
-    'version': '19.0.1.0.0',
+    'version': '20.0.1.0.1',
     "category": "Manufacturing",
     "summary": "Add pasteurisation data to manufacturing orders",
     "description": """

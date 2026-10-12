@@ -19,7 +19,7 @@ This module extends Odoo's Manufacturing (MRP) module to track and manage pasteu
 
 ## Requirements
 
-- Odoo 18.0
+- Odoo 20.0 (branch `20.0`; `master` = Odoo 18, `19.0` = Odoo 19)
 - MRP (Manufacturing) module
 
 ## Installation
@@ -51,6 +51,35 @@ This module extends Odoo's Manufacturing (MRP) module to track and manage pasteu
 - **Set Duration**: Automatically calculates appropriate duration based on temperature
 - **End Pasteurization**: Records the end time and calculates actual duration
 - **Validation**: The system prevents completion of manufacturing orders without proper pasteurization data
+
+## Odoo 20
+
+Větev `20.0`, verze `20.0.1.0.1`. Všechno, na co modul v jádře sahá, funguje v Odoo 20 stejně
+(ověřeno proti zdrojům 20):
+
+- Tlačítko Vyrobit dál volá `mrp.production.button_mark_done()`, kontrola začátku pasterace
+  před dokončením proto platí beze změny.
+- `action_confirm()` nastavuje stav přiřazením `state = 'confirmed'`, přepsaný `write` tedy
+  při potvrzení dál zapíše začátek a dobu pasterace.
+- Pohledy `mrp.mrp_production_form_view` (notebook), `mrp.mrp_production_tree_view`
+  (pole `product_id`) a `product.product_template_form_view` (notebook) existují beze změny.
+- Přejmenování `product_uom_id` → `uom_id` na výrobní zakázce se modulu netýká.
+
+Opravy chování při portu (proto verze `1.0.1`):
+
+- Prázdná volba teploty (`none`) se bere jako „bez pasterace“. Dřív potvrzení zakázky s touto
+  volbou spadlo na `int('none')` a tlačítko Začátek pasterizace ji brala jako zadanou teplotu.
+- Kontrola před dokončením funguje i pro víc zakázek najednou (hromadná akce Označit jako
+  hotové v seznamu). Dřív padala na „Expected singleton“; chybová hláška teď vypíše zakázky
+  bez začátku pasterace.
+
+Nově jsou v `tests/` testy (převzetí teploty z produktu, start a doba pasterace při potvrzení,
+zákaz dokončení bez začátku, hromadné dokončení, volba `none`, tlačítka Začátek/Ukončit).
+
+**Migrace dat:** žádná. Modul ukládá jen vlastní sloupce `pasteurisation_*` na
+`mrp_production` a `pasteurisation_temperature` na `product_template`; jejich typ ani hodnoty
+se nemění (na produkci 6. 10. 2026: 1 271 zakázek s teplotou 63 nebo 92 °C, 11 produktů s výchozí
+teplotou, hodnota `none` se v datech nevyskytuje).
 
 ## License
 

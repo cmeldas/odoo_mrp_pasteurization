@@ -21,8 +21,13 @@ class MrpProduction(models.Model):
         help="Datum a čas začátku pasterizace.",
     )
 
+    def _has_pasteurisation(self):
+        """Zakázka má zadanou skutečnou teplotu; prázdná volba 'none' znamená bez pasterace."""
+        self.ensure_one()
+        return self.pasteurisation_temperature not in (False, "none")
+
     def set_pasteurisation_start(self):
-        if not self.pasteurisation_temperature:
+        if not self._has_pasteurisation():
             raise UserError(_("Zadej prvně teplotu pasterizace."))
         self.pasteurisation_start = fields.Datetime.now()
 
@@ -30,10 +35,7 @@ class MrpProduction(models.Model):
         def clamp(value, min_val, max_val):
             return max(min_val, min(max_val, value))
 
-        if (
-            self.pasteurisation_temperature
-            and int(self.pasteurisation_temperature) < 70
-        ):
+        if self._has_pasteurisation() and int(self.pasteurisation_temperature) < 70:
             # Low temp (63°C): mean=32.5, std=1, min=30, max=35
             duration = random.gauss(32.5, 1)
             self.pasteurisation_duration = int(clamp(duration, 30, 40))
@@ -51,8 +53,14 @@ class MrpProduction(models.Model):
         self.pasteurisation_duration = int(duration)
 
     def _validate_pasteurisation(self):
-        if self.pasteurisation_temperature and not self.pasteurisation_start:
-            raise UserError(_("Nelze dokončit výrobu bez zadání začátku pasterizace."))
+        # button_mark_done volá jádro i na víc zakázek najednou (hromadná akce Označit jako
+        # hotové v seznamu, průvodce nedodělky), proto kontrola po jednotlivých zakázkách.
+        missing = self.filtered(lambda p: p._has_pasteurisation() and not p.pasteurisation_start)
+        if missing:
+            raise UserError(_(
+                "Nelze dokončit výrobu bez zadání začátku pasterizace (%s).",
+                ", ".join(missing.mapped("display_name")),
+            ))
 
     def button_mark_done(self):
         self._validate_pasteurisation()
@@ -70,7 +78,7 @@ class MrpProduction(models.Model):
         res = super().write(vals)
         if vals.get("state") == "confirmed":
             for production in self:
-                if production.pasteurisation_start is False and production.pasteurisation_temperature:
+                if not production.pasteurisation_start and production._has_pasteurisation():
                     production.set_pasteurisation_start()
                     production.set_pasteurisation_duration()
         return res
