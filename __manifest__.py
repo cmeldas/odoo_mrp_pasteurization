@@ -1,6 +1,6 @@
 {
     "name": "Manufacturing Pasteurisation Data",
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.0.2',
     "category": "Manufacturing",
     "summary": "Add pasteurisation data to manufacturing orders",
     "description": """
@@ -10,6 +10,7 @@
     "data": [
         "views/mrp_production_views.xml",
         "views/product_views.xml",
+        "views/stock_move_views.xml",
     ],
     'author': 'Matouš Čmelík',
     'maintainer': 'Matouš Čmelík',

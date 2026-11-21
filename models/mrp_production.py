@@ -82,3 +82,23 @@ class MrpProduction(models.Model):
                     production.set_pasteurisation_start()
                     production.set_pasteurisation_duration()
         return res
+
+    def copy_data(self, default=None):
+        """Duplikát zakázky s kusovníkem si komponenty vezme znovu z kusovníku.
+
+        Jádro kopíruje řádky komponent tak, jak v zakázce jsou. Řádek bez vazby na řádek
+        kusovníku (uložený z telefonu před opravou kanbanu, nebo přidaný ručně) pak bere jako
+        ruční: při změně produktu nebo množství v návrhu ho nechá a přidá k němu další
+        z kusovníku. Bez zkopírovaných řádků je po založení duplikátu dopočítá
+        `_compute_move_raw_ids` z kusovníku a množství zakázky.
+
+        Nedodělky a rozdělení zakázky předávají `move_raw_ids` v `default` a řídí si je samy,
+        zakázka bez kusovníku se kopíruje jako v jádře.
+        """
+        vals_list = super().copy_data(default=default)
+        if default and "move_raw_ids" in default:
+            return vals_list
+        for production, vals in zip(self, vals_list):
+            if production.bom_id:
+                vals.pop("move_raw_ids", None)
+        return vals_list

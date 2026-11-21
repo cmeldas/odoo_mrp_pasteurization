@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Odoo 20 zobrazuje komponenty výrobní zakázky na telefonu a tabletu jako kanban
+         (move_raw_ids mode="list,kanban") a tenhle kanban nenačítá bom_line_id. Webový klient
+         pak uloží komponenty bez vazby na řádek kusovníku, změna produktu nebo duplikace
+         zakázky je bere jako ruční řádky a přidá k nim další z kusovníku: mléko je v zakázce
+         dvakrát a Vyrobit skončí na Varování spotřeby. Pole jen načíst, nezobrazuje se. -->
+    <record id="view_move_kanban_bom_line" model="ir.ui.view">
+        <field name="name">stock.move.kanban.bom_line</field>
+        <field name="model">stock.move</field>
+        <field name="inherit_id" ref="stock.view_move_kandan"/>
+        <field name="arch" type="xml">
+            <field name="is_inventory" position="after">
+                <field name="bom_line_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

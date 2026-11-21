@@ -54,7 +54,7 @@ This module extends Odoo's Manufacturing (MRP) module to track and manage pasteu
 
 ## Odoo 20
 
-Větev `20.0`, verze `20.0.1.0.1`. Všechno, na co modul v jádře sahá, funguje v Odoo 20 stejně
+Větev `20.0`, verze `20.0.1.0.2`. Všechno, na co modul v jádře sahá, funguje v Odoo 20 stejně
 (ověřeno proti zdrojům 20):
 
 - Tlačítko Vyrobit dál volá `mrp.production.button_mark_done()`, kontrola začátku pasterace
@@ -75,6 +75,35 @@ Opravy chování při portu (proto verze `1.0.1`):
 
 Nově jsou v `tests/` testy (převzetí teploty z produktu, start a doba pasterace při potvrzení,
 zákaz dokončení bez začátku, hromadné dokončení, volba `none`, tlačítka Začátek/Ukončit).
+
+### Komponenty zakázky na telefonu (verze `20.0.1.0.2`)
+
+Odoo 20 zobrazuje komponenty výrobní zakázky na telefonu a tabletu jako kartičky
+(`move_raw_ids` má `mode="list,kanban"`, v 19 nebylo) a kanban `stock.view_move_kandan`
+nenačítá `bom_line_id`. Komponenty založené z telefonu se proto uloží bez vazby na řádek
+kusovníku. Když se pak v zakázce v návrhu změní produkt (typicky po Duplikovat), jádro je
+v `_compute_move_raw_ids` bere jako ruční řádky, nechá je a přidá další z kusovníku: mléko je
+v zakázce dvakrát. Kontrola spotřeby v Odoo 20 běží vždy (volba spotřeby na kusovníku zmizela),
+řádek navíc má očekávanou spotřebu 0, takže Vyrobit skončí na Varování spotřeby a stanice
+s váhou (`odoo_utils`) zakázku neuzavře. Na produkci je od 23. 10. do 21. 11. 2026 bez vazby
+každý řádek komponent založený v Odoo 20 a 23 zakázek má řádky navíc (19 hotových, 4 rozdělané).
+
+Oprava má dvě části:
+
+- **Kanban načítá `bom_line_id`.** Modul ho do kanbanu přidá jako skryté pole, klient ho pak
+  načte a uloží. Nové řádky z telefonu si vazbu drží.
+- **Duplikát bere komponenty z kusovníku.** Samotná první část nestačí: zakázky se zakládají
+  duplikací starších a ty už vazbu nemají, takže by se řádky navíc kopírovaly dál i z počítače.
+  `copy_data` proto u zakázky s kusovníkem řádky komponent nekopíruje a jádro je po založení
+  duplikátu dopočítá z kusovníku a množství. Duplikát rozbité zakázky je tak čistý a změna
+  produktu nebo množství v něm funguje jako v jádře. Ručně přidané komponenty se tím do
+  duplikátu nepřenesou. Nedodělky a rozdělení zakázky (předávají `move_raw_ids` v `default`)
+  a zakázky bez kusovníku se kopírují beze změny.
+
+Testy v `test_mobile_components`: onchange a uložení jen s poli z kanbanu (jako klient na
+telefonu), duplikát zakázky s řádky bez vazby, změna produktu a množství v duplikátu, zakázka
+bez kusovníku a nedodělek. Data se nemigrují, uzavřených zakázek se oprava netýká; řádky
+navíc v rozdělaných zakázkách je potřeba smazat ručně.
 
 **Migrace dat:** žádná. Modul ukládá jen vlastní sloupce `pasteurisation_*` na
 `mrp_production` a `pasteurisation_temperature` na `product_template`; jejich typ ani hodnoty
